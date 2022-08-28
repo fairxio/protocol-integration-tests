@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-var _ = Describe("Create DID Document", func() {
+var _ = Describe("DID Document Operations", func() {
 
 	Describe("Creating a DID Document for the first time", func() {
 
@@ -64,6 +64,44 @@ var _ = Describe("Create DID Document", func() {
 			err = json.Unmarshal(resp.Body(), &responseDidDocument)
 			Expect(err).To(BeNil())
 			Expect(responseDidDocument.ID).To(BeEquivalentTo(randomDid))
+
+		})
+
+		It("Allows us to update the document with additional attributes", func() {
+
+			client := resty.New()
+			resp, err := client.R().
+				Get(fmt.Sprintf("http://localhost:8001/v1.0.0/%s", base64.RawURLEncoding.EncodeToString([]byte(randomDid))))
+
+			Expect(err).To(BeNil())
+			Expect(resp).ToNot(BeNil())
+			Expect(resp.StatusCode()).To(BeEquivalentTo(http.StatusOK))
+
+			var responseDidDocument did.DIDDocument
+			err = json.Unmarshal(resp.Body(), &responseDidDocument)
+			Expect(err).To(BeNil())
+			Expect(responseDidDocument.ID).To(BeEquivalentTo(randomDid))
+
+			responseDidDocument.Service = []did.Service{
+				did.Service{
+					ID: fmt.Sprintf("%s%s", responseDidDocument.ID, "#fairx"),
+					Endpoints: []did.ServiceEndpoint{
+						did.ServiceEndpoint{
+							URI: "https://fairx.io/v1.0.0",
+						},
+					},
+				},
+			}
+
+			docJson, _ := json.Marshal(&responseDidDocument)
+			updateResp, err := client.R().
+				SetHeader("Content-Type", "application/json").
+				SetAuthToken(jwt).
+				SetBody(docJson).
+				Post("http://localhost:8001/v1.0.0")
+
+			Expect(updateResp).ToNot(BeNil())
+			Expect(updateResp.StatusCode()).To(BeEquivalentTo(http.StatusOK))
 
 		})
 
