@@ -89,7 +89,7 @@ var _ = Describe("DWN FairX Messages", func() {
 			Expect(err).To(BeNil())
 			Expect(responseObject.Status.Code).To(BeEquivalentTo(200))
 			Expect(len(responseObject.Replies)).To(BeEquivalentTo(1))
-			Expect(responseObject.Replies[0].Status).To(BeEquivalentTo(200))
+			Expect(responseObject.Replies[0].Status.Code).To(BeEquivalentTo(201))
 
 			// Get from DWN
 			getMessages := did.Message{Descriptor: did.Descriptor{Method: "FairXSessionMessages"}}
@@ -114,7 +114,7 @@ var _ = Describe("DWN FairX Messages", func() {
 			Expect(err).To(BeNil())
 			Expect(getMessagesResponseObject.Status.Code).To(BeEquivalentTo(200))
 			Expect(len(getMessagesResponseObject.Replies)).To(BeEquivalentTo(1))
-			Expect(getMessagesResponseObject.Replies[0].Status).To(BeEquivalentTo(200))
+			Expect(getMessagesResponseObject.Replies[0].Status.Code).To(BeEquivalentTo(200))
 		})
 
 	})
