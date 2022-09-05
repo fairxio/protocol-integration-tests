@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/fairxio/go/did"
 	"github.com/fairxio/protocol-integration-tests/auth"
+	"github.com/fairxio/protocol-integration-tests/testutils"
 	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,8 +14,11 @@ var _ = Describe("DWN FairX Messages", func() {
 
 	Describe("Get No Messages", func() {
 
+		// create new testuser
+		_, testDID := testutils.CreateRandomDID()
+
 		// Authenticate
-		jwt := auth.Authenticate("did:fairx:aW50ZWdyYXRpb250ZXN0QGZhaXJ4Lmlv")
+		jwt := auth.Authenticate(testDID)
 
 		It("Returns a successful response with no messages", func() {
 
@@ -24,7 +28,7 @@ var _ = Describe("DWN FairX Messages", func() {
 				},
 			}
 			requestObject := did.RequestObject{
-				Target:   "did:fairx:aW50ZWdyYXRpb250ZXN0QGZhaXJ4Lmlv",
+				Target:   "testDID",
 				Messages: []did.Message{fairxMessage},
 			}
 			rawRequestObject, _ := json.Marshal(&requestObject)
@@ -48,6 +52,7 @@ var _ = Describe("DWN FairX Messages", func() {
 			Expect(responseObject.Status.Code).To(BeEquivalentTo(200))
 			Expect(len(responseObject.Replies)).To(BeEquivalentTo(1))
 			Expect(responseObject.Replies[0].Status.Code).To(BeEquivalentTo(200))
+			Expect(responseObject.Replies[0].Status.Detail).To(BeEquivalentTo("OK"))
 
 		})
 
@@ -55,8 +60,11 @@ var _ = Describe("DWN FairX Messages", func() {
 
 	Describe("Post a valid message and retrieve it", func() {
 
+		// Create a new user
+		_, testDID := testutils.CreateRandomDID()
+
 		// Authenticate
-		jwt := auth.Authenticate("did:fairx:dGVzdEBmYWlyeC5pbw")
+		jwt := auth.Authenticate(testDID)
 
 		fairxMessage := did.Message{
 			Descriptor: did.Descriptor{
@@ -64,7 +72,7 @@ var _ = Describe("DWN FairX Messages", func() {
 			},
 		}
 		requestObject := did.RequestObject{
-			Target:   "did:fairx:dGVzdEBmYWlyeC5pbw",
+			Target:   testDID,
 			Messages: []did.Message{fairxMessage},
 		}
 
@@ -94,7 +102,7 @@ var _ = Describe("DWN FairX Messages", func() {
 			// Get from DWN
 			getMessages := did.Message{Descriptor: did.Descriptor{Method: "FairXSessionMessages"}}
 			roMessages := did.RequestObject{
-				Target:   "did:fairx:dGVzdEBmYWlyeC5pbw",
+				Target:   testDID,
 				Messages: []did.Message{getMessages},
 			}
 			rawRoMessages, _ := json.Marshal(&roMessages)
