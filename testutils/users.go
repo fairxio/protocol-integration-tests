@@ -10,9 +10,13 @@ import (
 var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
 
 func CreateRandomDID() (string, string) {
+	return CreateRandomDIDInDomain("fairx.io")
+}
+
+func CreateRandomDIDInDomain(domain string) (string, string) {
 
 	// Create random number up to 6 digits
-	userDomain := fmt.Sprintf("test%s@fairx.io", EncodeToString(6))
+	userDomain := fmt.Sprintf("test%s@%s", EncodeToString(6), domain)
 	userDomainEncoded := base64.RawURLEncoding.EncodeToString([]byte(userDomain))
 	return userDomain, fmt.Sprintf("did:fairx:%s", userDomainEncoded)
 

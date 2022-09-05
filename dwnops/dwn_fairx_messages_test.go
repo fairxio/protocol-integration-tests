@@ -28,7 +28,7 @@ var _ = Describe("DWN FairX Messages", func() {
 				},
 			}
 			requestObject := did.RequestObject{
-				Target:   "testDID",
+				Target:   testDID,
 				Messages: []did.Message{fairxMessage},
 			}
 			rawRequestObject, _ := json.Marshal(&requestObject)
@@ -124,6 +124,47 @@ var _ = Describe("DWN FairX Messages", func() {
 			Expect(len(getMessagesResponseObject.Replies)).To(BeEquivalentTo(1))
 			Expect(getMessagesResponseObject.Replies[0].Status.Code).To(BeEquivalentTo(200))
 			Expect(len(getMessagesResponseObject.Replies[0].Entries)).To(BeEquivalentTo(1))
+		})
+
+	})
+
+	Describe("Error Scenarios", func() {
+
+		_, badDomainDid := testutils.CreateRandomDIDInDomain("notfairx.io")
+
+		// Authenticate
+		jwt := auth.Authenticate(badDomainDid)
+
+		It("Rejects a session establish message to a different target domain", func() {
+
+			fairxMessage := did.Message{
+				Descriptor: did.Descriptor{
+					Method: "FairXSessionEstablish",
+				},
+			}
+			requestObject := did.RequestObject{
+				Target:   badDomainDid,
+				Messages: []did.Message{fairxMessage},
+			}
+			rawRequestObject, _ := json.Marshal(&requestObject)
+
+			// Post to DWN
+			client := resty.New()
+			resp, err := client.R().
+				SetHeader("Content-Type", "application/json").
+				SetAuthToken(jwt).
+				SetBody(rawRequestObject).
+				Post("http://localhost:8002/v1.0.0")
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode()).To(BeEquivalentTo(200))
+
+			var responseObject did.ResponseObject
+			err = json.Unmarshal(resp.Body(), &responseObject)
+
+			Expect(err).To(BeNil())
+			Expect(responseObject.Status.Code).To(BeEquivalentTo(424))
+
 		})
 
 	})
