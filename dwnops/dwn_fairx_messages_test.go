@@ -115,6 +115,7 @@ var _ = Describe("DWN FairX Messages", func() {
 			Expect(getMessagesResponseObject.Status.Code).To(BeEquivalentTo(200))
 			Expect(len(getMessagesResponseObject.Replies)).To(BeEquivalentTo(1))
 			Expect(getMessagesResponseObject.Replies[0].Status.Code).To(BeEquivalentTo(200))
+			Expect(len(getMessagesResponseObject.Replies[0].Entries)).To(BeEquivalentTo(1))
 		})
 
 	})
